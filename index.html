@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Estoque 3D</title>
+</head>
+<body>
+
+<h2>Adicionar / Editar</h2>
+
+<input id="rua" placeholder="Rua (A)">
+<input id="coluna" placeholder="Coluna (1)">
+<input id="altura" placeholder="Altura (1)">
+<input id="item" placeholder="Item">
+
+<button onclick="salvar()">Salvar</button>
+
+<h2>Lista</h2>
+<ul id="lista"></ul>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbzMACjgdxjUfhjtmJiyqTGOZzaoNDM2LWBieG60z5qPtm5u2x7yjW2sNTP1tPzqW8FV/exec";
+
+async function carregar() {
+  const res = await fetch(API_URL);
+  const dados = await res.json();
+
+  const lista = document.getElementById("lista");
+  lista.innerHTML = "";
+
+  dados.forEach(d => {
+    const li = document.createElement("li");
+    li.textContent =
+      `${d.Rua}-${d.Coluna}-${d.Altura} → ${d.Item}`;
+
+    lista.appendChild(li);
+  });
+}
+
+async function salvar() {
+  const dados = {
+    rua: document.getElementById("rua").value,
+    coluna: document.getElementById("coluna").value,
+    altura: document.getElementById("altura").value,
+    item: document.getElementById("item").value
+  };
+
+  await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify(dados)
+  });
+
+  carregar();
+}
+
+setInterval(carregar, 3000);
+
+carregar();
+</script>
+
+</body>
+</html>
