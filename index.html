@@ -3,26 +3,27 @@
 const API_URL =
 "https://script.google.com/macros/s/AKfycbzMACjgdxjUfhjtmJiyqTGOZzaoNDM2LWBieG60z5qPtm5u2x7yjW2sNTP1tPzqW8FV/exec";
 
-// CARREGAR DADOS
 function carregar() {
 
   const script = document.createElement("script");
 
-  script.src = API_URL + "?callback=mostrar";
+  script.src =
+    API_URL + "?callback=mostrar";
 
   document.body.appendChild(script);
 }
 
-// MOSTRAR DADOS
 function mostrar(dados) {
 
-  const lista = document.getElementById("lista");
+  const lista =
+    document.getElementById("lista");
 
   lista.innerHTML = "";
 
   dados.forEach(d => {
 
-    const li = document.createElement("li");
+    const li =
+      document.createElement("li");
 
     li.textContent =
       `${d.Rua}-${d.Coluna}-${d.Altura} → ${d.Item}`;
@@ -31,7 +32,6 @@ function mostrar(dados) {
   });
 }
 
-// SALVAR
 function salvar() {
 
   const rua =
@@ -54,7 +54,8 @@ function salvar() {
       document.getElementById("item").value
     );
 
-  const script = document.createElement("script");
+  const script =
+    document.createElement("script");
 
   script.src =
     `${API_URL}?rua=${rua}&coluna=${coluna}&altura=${altura}&item=${item}&callback=salvo`;
