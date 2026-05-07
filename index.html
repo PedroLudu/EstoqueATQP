@@ -94,6 +94,36 @@ rua = encodeURIComponent(rua);
           document.getElementById("item").value
         );
 
+      const colunaNum = parseInt(coluna);
+      const alturaNum = parseInt(altura);
+
+      // validações numéricas
+      if (isNaN(colunaNum) || isNaN(alturaNum)) {
+
+      alert("Coluna e Altura devem ser números.");
+
+      return;
+      }
+
+      // primeira coluna -> máximo 2
+      if (colunaNum === 1 && alturaNum > 2) {
+
+      alert(
+      "A coluna 1 permite altura máxima de 2."
+      );
+
+      return;
+      }
+
+      // demais colunas -> máximo 3
+      if (colunaNum > 1 && alturaNum > 3) {
+
+      alert(
+      "As demais colunas permitem altura máxima de 3."
+      );
+
+      return;
+      }
       const script =
         document.createElement("script");
 
