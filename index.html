@@ -80,6 +80,30 @@
 
       cursor: pointer;
     }
+    #infoBox {
+
+  position: fixed;
+
+  bottom: 20px;
+
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  background: rgba(0,0,0,0.8);
+
+  color: white;
+
+  padding: 12px 18px;
+
+  border-radius: 10px;
+
+  z-index: 20;
+
+  font-size: 16px;
+
+  display: none;
+}
 
   </style>
 
@@ -120,6 +144,7 @@
   </div>
 
   <div id="canvas3d"></div>
+  <div id="infoBox"></div>
 
   <script type="module">
 
@@ -465,7 +490,67 @@
     // =========================
     // LOOP
     // =========================
+    const raycaster =
+  new THREE.Raycaster();
 
+const mouse =
+  new THREE.Vector2();
+
+window.addEventListener(
+  "click",
+  (event) => {
+
+    mouse.x =
+      (event.clientX / window.innerWidth)
+      * 2 - 1;
+
+    mouse.y =
+      -(event.clientY / window.innerHeight)
+      * 2 + 1;
+
+    raycaster.setFromCamera(
+      mouse,
+      camera
+    );
+
+    const intersects =
+      raycaster.intersectObjects(
+        scene.children
+      );
+
+    if (
+      intersects.length > 0
+    ) {
+
+      const objeto =
+        intersects[0].object;
+
+      if (
+        objeto.userData
+      ) {
+
+        const info =
+          objeto.userData;
+
+        const box =
+          document.getElementById(
+            "infoBox"
+          );
+
+        box.style.display =
+          "block";
+
+        box.innerHTML = `
+          <strong>${info.item}</strong><br>
+          Rua: ${info.rua}<br>
+          Coluna: ${info.coluna}<br>
+          Altura: ${info.altura}
+        `;
+      }
+    }
+  }
+);
+    
     function animar() {
 
       requestAnimationFrame(animar);
