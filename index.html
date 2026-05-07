@@ -124,6 +124,15 @@ rua = encodeURIComponent(rua);
 
       return;
       }
+      // limite de colunas
+      if (colunaNum < 1 || colunaNum > 4) {
+
+      alert(
+      "As colunas devem estar entre 1 e 4."
+      );
+
+      return;
+      }
       const script =
         document.createElement("script");
 
