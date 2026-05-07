@@ -496,6 +496,7 @@
 const mouse =
   new THREE.Vector2();
 
+let cuboAtual = null;
 window.addEventListener(
   "click",
   (event) => {
@@ -546,6 +547,67 @@ window.addEventListener(
           Coluna: ${info.coluna}<br>
           Altura: ${info.altura}
         `;
+      }
+    }
+  }
+);
+    // =========================
+// HOVER
+// =========================
+
+window.addEventListener(
+  "mousemove",
+  (event) => {
+
+    mouse.x =
+      (event.clientX / window.innerWidth)
+      * 2 - 1;
+
+    mouse.y =
+      -(event.clientY / window.innerHeight)
+      * 2 + 1;
+
+    raycaster.setFromCamera(
+      mouse,
+      camera
+    );
+
+    const intersects =
+      raycaster.intersectObjects(
+        scene.children
+      );
+
+    // restaura cor anterior
+    if (cuboAtual) {
+
+      cuboAtual.material.color.set(
+
+        cuboAtual.userData.item !== "Vazio"
+        ? 0x00aa00
+        : 0xbbbbbb
+
+      );
+
+      cuboAtual = null;
+    }
+
+    // novo hover
+    if (
+      intersects.length > 0
+    ) {
+
+      const objeto =
+        intersects[0].object;
+
+      if (
+        objeto.material
+      ) {
+
+        cuboAtual = objeto;
+
+        objeto.material.color.set(
+          0xffff00
+        );
       }
     }
   }
