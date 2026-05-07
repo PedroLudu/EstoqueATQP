@@ -64,10 +64,20 @@
 
     function salvar() {
 
-      const rua =
-        encodeURIComponent(
-          document.getElementById("rua").value
-        );
+      let rua =
+  document.getElementById("rua").value
+    .trim()
+    .toUpperCase();
+
+// validação
+if (!["A", "B", "C", "D"].includes(rua)) {
+
+  alert("Rua inválida! Use apenas A, B, C ou D.");
+
+  return;
+}
+
+rua = encodeURIComponent(rua);
 
       const coluna =
         encodeURIComponent(
