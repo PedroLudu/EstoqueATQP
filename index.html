@@ -1,45 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 
 <head>
-  <meta charset="UTF-8">
-  <title>Estoque 3D</title>
 
-  <!-- THREE.JS -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Estoque 3D</title>
 
   <style>
 
     body {
+
       margin: 0;
-      font-family: Arial;
+
+      font-family: Arial, sans-serif;
+
       background: #f0f0f0;
+
+      overflow: hidden;
     }
 
     #painel {
+
       padding: 15px;
+
       background: white;
+
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+
+      position: relative;
+
+      z-index: 10;
     }
 
     input {
+
       padding: 8px;
+
       margin: 5px;
+
+      width: 90px;
     }
 
     button {
+
       padding: 8px 15px;
+
       cursor: pointer;
     }
 
     #canvas3d {
+
       width: 100vw;
-      height: calc(100vh - 120px);
-      display: block;
+
+      height: calc(100vh - 110px);
     }
 
   </style>
+
 </head>
 
 <body>
@@ -48,10 +71,27 @@
 
     <h2>Estoque 3D</h2>
 
-    <input id="rua" placeholder="Rua">
-    <input id="coluna" placeholder="Coluna">
-    <input id="altura" placeholder="Altura">
-    <input id="item" placeholder="Item">
+    <input
+      id="rua"
+      placeholder="Rua"
+    >
+
+    <input
+      id="coluna"
+      placeholder="Coluna"
+      type="number"
+    >
+
+    <input
+      id="altura"
+      placeholder="Altura"
+      type="number"
+    >
+
+    <input
+      id="item"
+      placeholder="Item"
+    >
 
     <button onclick="salvar()">
       Salvar
@@ -61,13 +101,23 @@
 
   <div id="canvas3d"></div>
 
-  <script>
+  <script type="module">
+
+    import * as THREE from
+    'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
+    import { OrbitControls } from
+    'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+
+    // =========================
+    // API
+    // =========================
 
     const API_URL =
       "https://script.google.com/macros/s/AKfycbzMACjgdxjUfhjtmJiyqTGOZzaoNDM2LWBieG60z5qPtm5u2x7yjW2sNTP1tPzqW8FV/exec";
 
     // =========================
-    // THREE.JS
+    // CENA
     // =========================
 
     const scene =
@@ -76,73 +126,146 @@
     scene.background =
       new THREE.Color(0xf0f0f0);
 
+    // =========================
+    // CAMERA
+    // =========================
+
     const camera =
       new THREE.PerspectiveCamera(
+
         75,
-        window.innerWidth / window.innerHeight,
+
+        window.innerWidth /
+        (window.innerHeight - 110),
+
         0.1,
+
         1000
       );
 
+    camera.position.set(
+      10,
+      8,
+      14
+    );
+
+    // =========================
+    // RENDERER
+    // =========================
+
     const renderer =
       new THREE.WebGLRenderer({
+
         antialias: true
+
       });
 
     renderer.setSize(
+
       window.innerWidth,
-      window.innerHeight - 120
+
+      window.innerHeight - 110
     );
 
     document
       .getElementById("canvas3d")
       .appendChild(renderer.domElement);
 
-    // luz
-    const light =
-      new THREE.DirectionalLight(0xffffff, 2);
+    // =========================
+    // CONTROLES
+    // =========================
 
-    light.position.set(10, 20, 10);
+    const controls =
+      new OrbitControls(
+
+        camera,
+
+        renderer.domElement
+      );
+
+    controls.enableDamping = true;
+
+    controls.dampingFactor = 0.05;
+
+    controls.screenSpacePanning = true;
+
+    controls.minDistance = 5;
+
+    controls.maxDistance = 30;
+
+    // =========================
+    // LUZES
+    // =========================
+
+    const light =
+      new THREE.DirectionalLight(
+
+        0xffffff,
+
+        2
+      );
+
+    light.position.set(
+      10,
+      20,
+      10
+    );
 
     scene.add(light);
 
     const ambient =
-      new THREE.AmbientLight(0xffffff, 1);
+      new THREE.AmbientLight(
+
+        0xffffff,
+
+        1
+      );
 
     scene.add(ambient);
 
-    // câmera
-    camera.position.set(8, 8, 12);
-
-    camera.lookAt(0, 0, 0);
-
     // =========================
-    // MATRIZ
+    // LIMPAR CENA
     // =========================
 
     function limparCena() {
 
-      while(scene.children.length > 2) {
+      while (
+        scene.children.length > 2
+      ) {
 
-        scene.remove(scene.children[2]);
-
+        scene.remove(
+          scene.children[2]
+        );
       }
     }
 
-    function mostrar(dados) {
+    // =========================
+    // DESENHAR MATRIZ
+    // =========================
+
+    window.mostrar = function(dados) {
 
       limparCena();
 
-      const ruas = ["A", "B", "C", "D"];
+      const ruas =
+        ["A", "B", "C", "D"];
 
       ruas.forEach((rua, z) => {
 
-        for (let coluna = 1; coluna <= 4; coluna++) {
+        for (
+          let coluna = 1;
+          coluna <= 4;
+          coluna++
+        ) {
 
           const alturaMax =
             coluna === 1 ? 2 : 3;
 
-          for (let altura = 1; altura <= alturaMax; altura++) {
+          for (
+            let altura = 1;
+            altura <= alturaMax;
+            altura++
+          ) {
 
             const item =
               dados.find(d =>
@@ -153,23 +276,32 @@
               );
 
             const geometry =
-              new THREE.BoxGeometry(1,1,1);
+              new THREE.BoxGeometry(
+                1,
+                1,
+                1
+              );
 
             const material =
               new THREE.MeshStandardMaterial({
 
                 color:
-                  item ? 0x00aa00 : 0xcccccc
+                  item
+                  ? 0x00aa00
+                  : 0xbbbbbb
 
               });
 
             const cube =
               new THREE.Mesh(
+
                 geometry,
+
                 material
               );
 
-            // posição
+            // posição 3D
+
             cube.position.x =
               coluna * 2;
 
@@ -179,6 +311,19 @@
             cube.position.z =
               z * 2;
 
+            // tooltip simples
+
+            cube.userData = {
+
+              rua,
+              coluna,
+              altura,
+              item:
+                item
+                ? item.Item
+                : "Vazio"
+            };
+
             scene.add(cube);
           }
         }
@@ -186,7 +331,7 @@
     }
 
     // =========================
-    // CARREGAR
+    // CARREGAR DADOS
     // =========================
 
     function carregar() {
@@ -195,7 +340,8 @@
         document.createElement("script");
 
       script.src =
-        API_URL + "?callback=mostrar";
+        API_URL +
+        "?callback=mostrar";
 
       document.body.appendChild(script);
     }
@@ -204,33 +350,40 @@
     // SALVAR
     // =========================
 
-    function salvar() {
+    window.salvar = function() {
 
       let rua =
-        document.getElementById("rua")
+        document
+          .getElementById("rua")
           .value
           .trim()
           .toUpperCase();
 
-      if (!["A","B","C","D"].includes(rua)) {
+      if (
+        !["A","B","C","D"]
+        .includes(rua)
+      ) {
 
         alert(
-          "Rua inválida!"
+          "Rua inválida! Use A-D."
         );
 
         return;
       }
 
       const coluna =
-        document.getElementById("coluna")
+        document
+          .getElementById("coluna")
           .value;
 
       const altura =
-        document.getElementById("altura")
+        document
+          .getElementById("altura")
           .value;
 
       const item =
-        document.getElementById("item")
+        document
+          .getElementById("item")
           .value;
 
       const colunaNum =
@@ -240,6 +393,7 @@
         parseInt(altura);
 
       // validações
+
       if (
         colunaNum < 1 ||
         colunaNum > 4
@@ -258,7 +412,7 @@
       ) {
 
         alert(
-          "Coluna 1 suporta até altura 2"
+          "Coluna 1 suporta altura até 2"
         );
 
         return;
@@ -285,7 +439,7 @@
       document.body.appendChild(script);
     }
 
-    function salvo() {
+    window.salvo = function() {
 
       carregar();
 
@@ -297,20 +451,47 @@
 
     function animar() {
 
-  requestAnimationFrame(animar);
+      requestAnimationFrame(animar);
 
-  controls.update();
+      controls.update();
 
-  renderer.render(
-    scene,
-    camera
-  );
-}
+      renderer.render(
+        scene,
+        camera
+      );
+    }
 
     animar();
 
+    // =========================
+    // RESIZE
+    // =========================
+
+    window.addEventListener(
+      "resize",
+      () => {
+
+        camera.aspect =
+          window.innerWidth /
+          (window.innerHeight - 110);
+
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(
+          window.innerWidth,
+          window.innerHeight - 110
+        );
+      }
+    );
+
+    // =========================
+    // START
+    // =========================
+
     document.addEventListener(
+
       "DOMContentLoaded",
+
       () => {
 
         carregar();
@@ -319,11 +500,11 @@
           carregar,
           3000
         );
-
       }
     );
 
   </script>
 
 </body>
+
 </html>
