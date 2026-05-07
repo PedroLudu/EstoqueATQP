@@ -28,7 +28,9 @@ async function carregar() {
   lista.innerHTML = "";
 
   dados.forEach(d => {
+
     const li = document.createElement("li");
+
     li.textContent =
       `${d.Rua}-${d.Coluna}-${d.Altura} → ${d.Item}`;
 
@@ -37,17 +39,15 @@ async function carregar() {
 }
 
 async function salvar() {
-  const dados = {
-    rua: document.getElementById("rua").value,
-    coluna: document.getElementById("coluna").value,
-    altura: document.getElementById("altura").value,
-    item: document.getElementById("item").value
-  };
 
-  await fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify(dados)
-  });
+  const rua = document.getElementById("rua").value;
+  const coluna = document.getElementById("coluna").value;
+  const altura = document.getElementById("altura").value;
+  const item = document.getElementById("item").value;
+
+  await fetch(
+    `${API_URL}?rua=${rua}&coluna=${coluna}&altura=${altura}&item=${item}`
+  );
 
   carregar();
 }
