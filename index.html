@@ -18,16 +18,33 @@
 
       margin: 0;
 
+      width: 100vw;
+
+      height: 100vh;
+
       overflow: hidden;
 
-      font-family: Arial;
+      font-family: Arial, sans-serif;
 
       background: #f0f0f0;
     }
 
+    #canvas3d {
+
+      position: fixed;
+
+      top: 0;
+
+      left: 0;
+
+      width: 100vw;
+
+      height: 100vh;
+    }
+
     #painel {
 
-      position: absolute;
+      position: fixed;
 
       top: 10px;
 
@@ -35,7 +52,7 @@
 
       z-index: 10;
 
-      background: white;
+      background: rgba(255,255,255,0.95);
 
       padding: 15px;
 
@@ -60,13 +77,8 @@
       padding: 10px;
 
       width: 100%;
-    }
 
-    #canvas3d {
-
-      width: 100vw;
-
-      height: 100vh;
+      cursor: pointer;
     }
 
   </style>
@@ -81,7 +93,7 @@
 
     <input
       id="rua"
-      placeholder="Rua"
+      placeholder="Rua (A-D)"
     >
 
     <input
@@ -111,18 +123,22 @@
 
   <script type="module">
 
-import * as THREE from
-'https://esm.sh/three@0.160.0';
+    import * as THREE from
+    'https://esm.sh/three@0.160.0';
 
-import { OrbitControls } from
-'https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls';
+    import { OrbitControls } from
+    'https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls';
+
+    // =========================
+    // API
+    // =========================
 
     const API_URL =
-    "https://script.google.com/macros/s/AKfycbzMACjgdxjUfhjtmJiyqTGOZzaoNDM2LWBieG60z5qPtm5u2x7yjW2sNTP1tPzqW8FV/exec";
+      "https://script.google.com/macros/s/AKfycbzMACjgdxjUfhjtmJiyqTGOZzaoNDM2LWBieG60z5qPtm5u2x7yjW2sNTP1tPzqW8FV/exec";
 
-    // ======================
+    // =========================
     // CENA
-    // ======================
+    // =========================
 
     const scene =
       new THREE.Scene();
@@ -130,16 +146,20 @@ import { OrbitControls } from
     scene.background =
       new THREE.Color(0xf0f0f0);
 
-    // ======================
+    // =========================
     // CAMERA
-    // ======================
+    // =========================
 
     const camera =
       new THREE.PerspectiveCamera(
+
         75,
+
         window.innerWidth /
         window.innerHeight,
+
         0.1,
+
         1000
       );
 
@@ -149,13 +169,15 @@ import { OrbitControls } from
       14
     );
 
-    // ======================
+    // =========================
     // RENDERER
-    // ======================
+    // =========================
 
     const renderer =
       new THREE.WebGLRenderer({
+
         antialias: true
+
       });
 
     renderer.setSize(
@@ -163,55 +185,69 @@ import { OrbitControls } from
       window.innerHeight
     );
 
+    renderer.setPixelRatio(
+      window.devicePixelRatio
+    );
+
     document
       .getElementById("canvas3d")
       .appendChild(renderer.domElement);
 
-    // ======================
+    // =========================
     // CONTROLES
-    // ======================
+    // =========================
 
     const controls =
       new OrbitControls(
+
         camera,
+
         renderer.domElement
       );
 
     controls.enableDamping = true;
 
-    // ======================
-    // LUZES
-    // ======================
+    controls.dampingFactor = 0.05;
 
-    const light =
+    controls.minDistance = 5;
+
+    controls.maxDistance = 40;
+
+    // =========================
+    // LUZES
+    // =========================
+
+    const luzDirecional =
       new THREE.DirectionalLight(
         0xffffff,
         2
       );
 
-    light.position.set(
+    luzDirecional.position.set(
       10,
       20,
       10
     );
 
-    scene.add(light);
+    scene.add(luzDirecional);
 
-    const ambient =
+    const luzAmbiente =
       new THREE.AmbientLight(
         0xffffff,
         1
       );
 
-    scene.add(ambient);
+    scene.add(luzAmbiente);
 
-    // ======================
+    // =========================
     // LIMPAR CENA
-    // ======================
+    // =========================
 
     function limparCena() {
 
-      while(scene.children.length > 2) {
+      while (
+        scene.children.length > 2
+      ) {
 
         scene.remove(
           scene.children[2]
@@ -219,9 +255,9 @@ import { OrbitControls } from
       }
     }
 
-    // ======================
+    // =========================
     // MOSTRAR MATRIZ
-    // ======================
+    // =========================
 
     window.mostrar = function(dados) {
 
@@ -278,6 +314,8 @@ import { OrbitControls } from
                 material
               );
 
+            // POSIÇÃO
+
             cube.position.x =
               coluna * 2;
 
@@ -293,9 +331,9 @@ import { OrbitControls } from
       });
     }
 
-    // ======================
+    // =========================
     // CARREGAR
-    // ======================
+    // =========================
 
     function carregar() {
 
@@ -303,14 +341,15 @@ import { OrbitControls } from
         document.createElement("script");
 
       script.src =
-        API_URL + "?callback=mostrar";
+        API_URL +
+        "?callback=mostrar";
 
       document.body.appendChild(script);
     }
 
-    // ======================
+    // =========================
     // SALVAR
-    // ======================
+    // =========================
 
     window.salvar = function() {
 
@@ -320,6 +359,18 @@ import { OrbitControls } from
           .value
           .trim()
           .toUpperCase();
+
+      if (
+        !["A","B","C","D"]
+        .includes(rua)
+      ) {
+
+        alert(
+          "Rua inválida!"
+        );
+
+        return;
+      }
 
       const coluna =
         document
@@ -336,6 +387,50 @@ import { OrbitControls } from
           .getElementById("item")
           .value;
 
+      const colunaNum =
+        parseInt(coluna);
+
+      const alturaNum =
+        parseInt(altura);
+
+      // validações
+
+      if (
+        colunaNum < 1 ||
+        colunaNum > 4
+      ) {
+
+        alert(
+          "Colunas devem ser 1-4"
+        );
+
+        return;
+      }
+
+      if (
+        colunaNum === 1 &&
+        alturaNum > 2
+      ) {
+
+        alert(
+          "Coluna 1 suporta altura máxima 2"
+        );
+
+        return;
+      }
+
+      if (
+        colunaNum > 1 &&
+        alturaNum > 3
+      ) {
+
+        alert(
+          "Altura máxima é 3"
+        );
+
+        return;
+      }
+
       const script =
         document.createElement("script");
 
@@ -351,9 +446,9 @@ import { OrbitControls } from
 
     }
 
-    // ======================
+    // =========================
     // LOOP
-    // ======================
+    // =========================
 
     function animar() {
 
@@ -369,11 +464,37 @@ import { OrbitControls } from
 
     animar();
 
-    // ======================
+    // =========================
+    // RESIZE
+    // =========================
+
+    window.addEventListener(
+      "resize",
+      () => {
+
+        camera.aspect =
+          window.innerWidth /
+          window.innerHeight;
+
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(
+          window.innerWidth,
+          window.innerHeight
+        );
+      }
+    );
+
+    // =========================
     // START
-    // ======================
+    // =========================
 
     carregar();
+
+    setInterval(
+      carregar,
+      3000
+    );
 
   </script>
 
