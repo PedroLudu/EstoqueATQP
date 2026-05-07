@@ -1,513 +1,314 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+<script type="module">
 
-<head>
+import * as THREE from
+'https://unpkg.com/three@0.160.0/build/three.module.js';
 
-  <meta charset="UTF-8">
+import { OrbitControls } from
+'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+const API_URL =
+"https://script.google.com/macros/s/AKfycbzMACjgdxjUfhjtmJiyqTGOZzaoNDM2LWBieG60z5qPtm5u2x7yjW2sNTP1tPzqW8FV/exec";
 
-  <title>Estoque 3D</title>
+// ======================
+// CENA
+// ======================
 
-  <style>
+const scene =
+  new THREE.Scene();
 
-    body {
+scene.background =
+  new THREE.Color(0xf0f0f0);
 
-      margin: 0;
+// ======================
+// CAMERA
+// ======================
 
-      font-family: Arial, sans-serif;
+const camera =
+  new THREE.PerspectiveCamera(
+    75,
+    window.innerWidth /
+    (window.innerHeight - 110),
+    0.1,
+    1000
+  );
 
-      background: #f0f0f0;
+camera.position.set(
+  10,
+  8,
+  14
+);
 
-      overflow: hidden;
+// ======================
+// RENDERER
+// ======================
+
+const renderer =
+  new THREE.WebGLRenderer({
+    antialias: true
+  });
+
+renderer.setSize(
+  window.innerWidth,
+  window.innerHeight - 110
+);
+
+document
+  .getElementById("canvas3d")
+  .appendChild(renderer.domElement);
+
+// ======================
+// CONTROLES
+// ======================
+
+const controls =
+  new OrbitControls(
+    camera,
+    renderer.domElement
+  );
+
+controls.enableDamping = true;
+
+controls.dampingFactor = 0.05;
+
+controls.minDistance = 5;
+
+controls.maxDistance = 30;
+
+// ======================
+// LUZES
+// ======================
+
+const light =
+  new THREE.DirectionalLight(
+    0xffffff,
+    2
+  );
+
+light.position.set(10,20,10);
+
+scene.add(light);
+
+const ambient =
+  new THREE.AmbientLight(
+    0xffffff,
+    1
+  );
+
+scene.add(ambient);
+
+// ======================
+// LIMPAR CENA
+// ======================
+
+function limparCena() {
+
+  while(scene.children.length > 2) {
+
+    scene.remove(
+      scene.children[2]
+    );
+  }
+}
+
+// ======================
+// MOSTRAR MATRIZ
+// ======================
+
+window.mostrar = function(dados) {
+
+  limparCena();
+
+  const ruas =
+    ["A","B","C","D"];
+
+  ruas.forEach((rua, z) => {
+
+    for (
+      let coluna = 1;
+      coluna <= 4;
+      coluna++
+    ) {
+
+      const alturaMax =
+        coluna === 1 ? 2 : 3;
+
+      for (
+        let altura = 1;
+        altura <= alturaMax;
+        altura++
+      ) {
+
+        const item =
+          dados.find(d =>
+
+            d.Rua === rua &&
+            Number(d.Coluna) === coluna &&
+            Number(d.Altura) === altura
+          );
+
+        const geometry =
+          new THREE.BoxGeometry(
+            1,
+            1,
+            1
+          );
+
+        const material =
+          new THREE.MeshStandardMaterial({
+
+            color:
+              item
+              ? 0x00aa00
+              : 0xbbbbbb
+
+          });
+
+        const cube =
+          new THREE.Mesh(
+            geometry,
+            material
+          );
+
+        cube.position.x =
+          coluna * 2;
+
+        cube.position.y =
+          altura * 1.5;
+
+        cube.position.z =
+          z * 2;
+
+        scene.add(cube);
+      }
     }
+  });
+}
 
-    #painel {
+// ======================
+// CARREGAR
+// ======================
 
-      padding: 15px;
+function carregar() {
 
-      background: white;
+  const script =
+    document.createElement("script");
 
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  script.src =
+    API_URL + "?callback=mostrar";
 
-      position: relative;
+  document.body.appendChild(script);
+}
 
-      z-index: 10;
-    }
+// ======================
+// SALVAR
+// ======================
 
-    input {
+window.salvar = function() {
 
-      padding: 8px;
+  let rua =
+    document
+      .getElementById("rua")
+      .value
+      .trim()
+      .toUpperCase();
 
-      margin: 5px;
+  if (
+    !["A","B","C","D"]
+    .includes(rua)
+  ) {
 
-      width: 90px;
-    }
-
-    button {
-
-      padding: 8px 15px;
-
-      cursor: pointer;
-    }
-
-    #canvas3d {
-
-      width: 100vw;
-
-      height: calc(100vh - 110px);
-    }
-
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
-
-</head>
-
-<body>
-
-  <div id="painel">
-
-    <h2>Estoque 3D</h2>
-
-    <input
-      id="rua"
-      placeholder="Rua"
-    >
-
-    <input
-      id="coluna"
-      placeholder="Coluna"
-      type="number"
-    >
-
-    <input
-      id="altura"
-      placeholder="Altura"
-      type="number"
-    >
-
-    <input
-      id="item"
-      placeholder="Item"
-    >
-
-    <button onclick="salvar()">
-      Salvar
-    </button>
-
-  </div>
-
-  <div id="canvas3d"></div>
-
-  <script>
-
-    import * as THREE from
-    'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-
-    import { OrbitControls } from
-    'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
-
-    // =========================
-    // API
-    // =========================
-
-    const API_URL =
-      "https://script.google.com/macros/s/AKfycbzMACjgdxjUfhjtmJiyqTGOZzaoNDM2LWBieG60z5qPtm5u2x7yjW2sNTP1tPzqW8FV/exec";
-
-    // =========================
-    // CENA
-    // =========================
-
-    const scene =
-      new THREE.Scene();
-
-    scene.background =
-      new THREE.Color(0xf0f0f0);
-
-    // =========================
-    // CAMERA
-    // =========================
-
-    const camera =
-      new THREE.PerspectiveCamera(
-
-        75,
-
-        window.innerWidth /
-        (window.innerHeight - 110),
-
-        0.1,
-
-        1000
-      );
-
-    camera.position.set(
-      10,
-      8,
-      14
+    alert(
+      "Rua inválida!"
     );
 
-    // =========================
-    // RENDERER
-    // =========================
+    return;
+  }
 
-    const renderer =
-      new THREE.WebGLRenderer({
+  const coluna =
+    document
+      .getElementById("coluna")
+      .value;
 
-        antialias: true
+  const altura =
+    document
+      .getElementById("altura")
+      .value;
 
-      });
+  const item =
+    document
+      .getElementById("item")
+      .value;
+
+  const script =
+    document.createElement("script");
+
+  script.src =
+    `${API_URL}?rua=${encodeURIComponent(rua)}&coluna=${encodeURIComponent(coluna)}&altura=${encodeURIComponent(altura)}&item=${encodeURIComponent(item)}&callback=salvo`;
+
+  document.body.appendChild(script);
+}
+
+window.salvo = function() {
+
+  carregar();
+
+}
+
+// ======================
+// LOOP
+// ======================
+
+function animar() {
+
+  requestAnimationFrame(animar);
+
+  controls.update();
+
+  renderer.render(
+    scene,
+    camera
+  );
+}
+
+animar();
+
+// ======================
+// RESIZE
+// ======================
+
+window.addEventListener(
+  "resize",
+  () => {
+
+    camera.aspect =
+      window.innerWidth /
+      (window.innerHeight - 110);
+
+    camera.updateProjectionMatrix();
 
     renderer.setSize(
-
       window.innerWidth,
-
       window.innerHeight - 110
     );
+  }
+);
 
-    document
-      .getElementById("canvas3d")
-      .appendChild(renderer.domElement);
+// ======================
+// START
+// ======================
 
-    // =========================
-    // CONTROLES
-    // =========================
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
 
-    const controls =
-      new OrbitControls(
+    carregar();
 
-        camera,
-
-        renderer.domElement
-      );
-
-    controls.enableDamping = true;
-
-    controls.dampingFactor = 0.05;
-
-    controls.screenSpacePanning = true;
-
-    controls.minDistance = 5;
-
-    controls.maxDistance = 30;
-
-    // =========================
-    // LUZES
-    // =========================
-
-    const light =
-      new THREE.DirectionalLight(
-
-        0xffffff,
-
-        2
-      );
-
-    light.position.set(
-      10,
-      20,
-      10
+    setInterval(
+      carregar,
+      3000
     );
 
-    scene.add(light);
+  }
+);
 
-    const ambient =
-      new THREE.AmbientLight(
-
-        0xffffff,
-
-        1
-      );
-
-    scene.add(ambient);
-
-    // =========================
-    // LIMPAR CENA
-    // =========================
-
-    function limparCena() {
-
-      while (
-        scene.children.length > 2
-      ) {
-
-        scene.remove(
-          scene.children[2]
-        );
-      }
-    }
-
-    // =========================
-    // DESENHAR MATRIZ
-    // =========================
-
-    window.mostrar = function(dados) {
-
-      limparCena();
-
-      const ruas =
-        ["A", "B", "C", "D"];
-
-      ruas.forEach((rua, z) => {
-
-        for (
-          let coluna = 1;
-          coluna <= 4;
-          coluna++
-        ) {
-
-          const alturaMax =
-            coluna === 1 ? 2 : 3;
-
-          for (
-            let altura = 1;
-            altura <= alturaMax;
-            altura++
-          ) {
-
-            const item =
-              dados.find(d =>
-
-                d.Rua === rua &&
-                Number(d.Coluna) === coluna &&
-                Number(d.Altura) === altura
-              );
-
-            const geometry =
-              new THREE.BoxGeometry(
-                1,
-                1,
-                1
-              );
-
-            const material =
-              new THREE.MeshStandardMaterial({
-
-                color:
-                  item
-                  ? 0x00aa00
-                  : 0xbbbbbb
-
-              });
-
-            const cube =
-              new THREE.Mesh(
-
-                geometry,
-
-                material
-              );
-
-            // posição 3D
-
-            cube.position.x =
-              coluna * 2;
-
-            cube.position.y =
-              altura * 1.5;
-
-            cube.position.z =
-              z * 2;
-
-            // tooltip simples
-
-            cube.userData = {
-
-              rua,
-              coluna,
-              altura,
-              item:
-                item
-                ? item.Item
-                : "Vazio"
-            };
-
-            scene.add(cube);
-          }
-        }
-      });
-    }
-
-    // =========================
-    // CARREGAR DADOS
-    // =========================
-
-    function carregar() {
-
-      const script =
-        document.createElement("script");
-
-      script.src =
-        API_URL +
-        "?callback=mostrar";
-
-      document.body.appendChild(script);
-    }
-
-    // =========================
-    // SALVAR
-    // =========================
-
-    window.salvar = function() {
-
-      let rua =
-        document
-          .getElementById("rua")
-          .value
-          .trim()
-          .toUpperCase();
-
-      if (
-        !["A","B","C","D"]
-        .includes(rua)
-      ) {
-
-        alert(
-          "Rua inválida! Use A-D."
-        );
-
-        return;
-      }
-
-      const coluna =
-        document
-          .getElementById("coluna")
-          .value;
-
-      const altura =
-        document
-          .getElementById("altura")
-          .value;
-
-      const item =
-        document
-          .getElementById("item")
-          .value;
-
-      const colunaNum =
-        parseInt(coluna);
-
-      const alturaNum =
-        parseInt(altura);
-
-      // validações
-
-      if (
-        colunaNum < 1 ||
-        colunaNum > 4
-      ) {
-
-        alert(
-          "Colunas: 1 até 4"
-        );
-
-        return;
-      }
-
-      if (
-        colunaNum === 1 &&
-        alturaNum > 2
-      ) {
-
-        alert(
-          "Coluna 1 suporta altura até 2"
-        );
-
-        return;
-      }
-
-      if (
-        colunaNum > 1 &&
-        alturaNum > 3
-      ) {
-
-        alert(
-          "Altura máxima é 3"
-        );
-
-        return;
-      }
-
-      const script =
-        document.createElement("script");
-
-      script.src =
-        `${API_URL}?rua=${encodeURIComponent(rua)}&coluna=${encodeURIComponent(coluna)}&altura=${encodeURIComponent(altura)}&item=${encodeURIComponent(item)}&callback=salvo`;
-
-      document.body.appendChild(script);
-    }
-
-    window.salvo = function() {
-
-      carregar();
-
-    }
-
-    // =========================
-    // LOOP
-    // =========================
-
-    function animar() {
-
-      requestAnimationFrame(animar);
-
-      controls.update();
-
-      renderer.render(
-        scene,
-        camera
-      );
-    }
-
-    animar();
-
-    // =========================
-    // RESIZE
-    // =========================
-
-    window.addEventListener(
-      "resize",
-      () => {
-
-        camera.aspect =
-          window.innerWidth /
-          (window.innerHeight - 110);
-
-        camera.updateProjectionMatrix();
-
-        renderer.setSize(
-          window.innerWidth,
-          window.innerHeight - 110
-        );
-      }
-    );
-
-    // =========================
-    // START
-    // =========================
-
-    document.addEventListener(
-
-      "DOMContentLoaded",
-
-      () => {
-
-        carregar();
-
-        setInterval(
-          carregar,
-          3000
-        );
-      }
-    );
-
-  </script>
-
-</body>
-
-</html>
+</script>
