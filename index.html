@@ -1,91 +1,119 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="UTF-8">
   <title>Estoque 3D</title>
 </head>
+
 <body>
-<script>
 
-const API_URL =
-"https://script.google.com/macros/s/AKfycbzMACjgdxjUfhjtmJiyqTGOZzaoNDM2LWBieG60z5qPtm5u2x7yjW2sNTP1tPzqW8FV/exec";
+  <h2>Adicionar / Editar</h2>
 
-function carregar() {
+  <input id="rua" placeholder="Rua">
+  <input id="coluna" placeholder="Coluna">
+  <input id="altura" placeholder="Altura">
+  <input id="item" placeholder="Item">
 
-  const script = document.createElement("script");
+  <button onclick="salvar()">
+    Salvar
+  </button>
 
-  script.src =
-    API_URL + "?callback=mostrar";
+  <h2>Lista</h2>
 
-  document.body.appendChild(script);
-}
+  <ul id="lista"></ul>
 
-function mostrar(dados) {
+  <script>
 
-  const lista =
-    document.getElementById("lista");
+    const API_URL =
+      "https://script.google.com/macros/s/AKfycbzMACjgdxjUfhjtmJiyqTGOZzaoNDM2LWBieG60z5qPtm5u2x7yjW2sNTP1tPzqW8FV/exec";
 
-  if (!lista) {
-    console.log("Lista ainda não carregada");
-    return;
-  }
+    function carregar() {
 
-  lista.innerHTML = "";
+      const script =
+        document.createElement("script");
 
-  dados.forEach(d => {
+      script.src =
+        API_URL + "?callback=mostrar";
 
-    const li =
-      document.createElement("li");
+      document.body.appendChild(script);
+    }
 
-    li.textContent =
-      `${d.Rua}-${d.Coluna}-${d.Altura} → ${d.Item}`;
+    function mostrar(dados) {
 
-    lista.appendChild(li);
-  });
+      const lista =
+        document.getElementById("lista");
 
-function salvar() {
+      if (!lista) return;
 
-  const rua =
-    encodeURIComponent(
-      document.getElementById("rua").value
+      lista.innerHTML = "";
+
+      dados.forEach(d => {
+
+        const li =
+          document.createElement("li");
+
+        li.textContent =
+          `${d.Rua}-${d.Coluna}-${d.Altura} → ${d.Item}`;
+
+        lista.appendChild(li);
+
+      });
+
+    }
+
+    function salvar() {
+
+      const rua =
+        encodeURIComponent(
+          document.getElementById("rua").value
+        );
+
+      const coluna =
+        encodeURIComponent(
+          document.getElementById("coluna").value
+        );
+
+      const altura =
+        encodeURIComponent(
+          document.getElementById("altura").value
+        );
+
+      const item =
+        encodeURIComponent(
+          document.getElementById("item").value
+        );
+
+      const script =
+        document.createElement("script");
+
+      script.src =
+        `${API_URL}?rua=${rua}&coluna=${coluna}&altura=${altura}&item=${item}&callback=salvo`;
+
+      document.body.appendChild(script);
+    }
+
+    function salvo(resposta) {
+
+      console.log(resposta);
+
+      carregar();
+
+    }
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      () => {
+
+        carregar();
+
+        setInterval(carregar, 3000);
+
+      }
     );
 
-  const coluna =
-    encodeURIComponent(
-      document.getElementById("coluna").value
-    );
+  </script>
 
-  const altura =
-    encodeURIComponent(
-      document.getElementById("altura").value
-    );
+</body>
 
-  const item =
-    encodeURIComponent(
-      document.getElementById("item").value
-    );
-
-  const script =
-    document.createElement("script");
-
-  script.src =
-    `${API_URL}?rua=${rua}&coluna=${coluna}&altura=${altura}&item=${item}&callback=salvo`;
-
-  document.body.appendChild(script);
-}
-
-function salvo(resposta) {
-
-  console.log(resposta);
-
-  carregar();
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-
-  carregar();
-
-  setInterval(carregar, 3000);
-
-});
-</script>
+</html>
