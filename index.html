@@ -25,6 +25,11 @@ function mostrar(dados) {
   const lista =
     document.getElementById("lista");
 
+  if (!lista) {
+    console.log("Lista ainda não carregada");
+    return;
+  }
+
   lista.innerHTML = "";
 
   dados.forEach(d => {
@@ -37,7 +42,7 @@ function mostrar(dados) {
 
     lista.appendChild(li);
   });
-}
+}}
 
 function salvar() {
 
@@ -77,12 +82,11 @@ function salvo(resposta) {
   carregar();
 }
 
-window.onload = () => {
+document.addEventListener("DOMContentLoaded", () => {
 
   carregar();
 
   setInterval(carregar, 3000);
 
-};
-
+});
 </script>
