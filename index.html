@@ -1,10 +1,28 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="UTF-8">
   <title>Estoque 3D</title>
 </head>
+
 <body>
+
+<h2>Adicionar / Editar</h2>
+
+<input id="rua" placeholder="Rua">
+<input id="coluna" placeholder="Coluna">
+<input id="altura" placeholder="Altura">
+<input id="item" placeholder="Item">
+
+<button onclick="salvar()">
+  Salvar
+</button>
+
+<h2>Lista</h2>
+
+<ul id="lista"></ul>
+
 <script>
 
 const API_URL =
@@ -12,7 +30,8 @@ const API_URL =
 
 function carregar() {
 
-  const script = document.createElement("script");
+  const script =
+    document.createElement("script");
 
   script.src =
     API_URL + "?callback=mostrar";
@@ -25,10 +44,7 @@ function mostrar(dados) {
   const lista =
     document.getElementById("lista");
 
-  if (!lista) {
-    console.log("Lista ainda não carregada");
-    return;
-  }
+  if (!lista) return;
 
   lista.innerHTML = "";
 
@@ -42,7 +58,6 @@ function mostrar(dados) {
 
     lista.appendChild(li);
   });
-}}
 
 function salvar() {
 
@@ -82,11 +97,18 @@ function salvo(resposta) {
   carregar();
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
 
-  carregar();
+    carregar();
 
-  setInterval(carregar, 3000);
+    setInterval(carregar, 3000);
 
-});
+  }
+);
+
 </script>
+
+</body>
+</html>
