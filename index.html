@@ -4,31 +4,189 @@
 <head>
   <meta charset="UTF-8">
   <title>Estoque 3D</title>
+
+  <!-- THREE.JS -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+  <style>
+
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: #f0f0f0;
+    }
+
+    #painel {
+      padding: 15px;
+      background: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    input {
+      padding: 8px;
+      margin: 5px;
+    }
+
+    button {
+      padding: 8px 15px;
+      cursor: pointer;
+    }
+
+    #canvas3d {
+      width: 100vw;
+      height: calc(100vh - 120px);
+      display: block;
+    }
+
+  </style>
 </head>
 
 <body>
 
-  <h2>Adicionar / Editar</h2>
+  <div id="painel">
 
-  <input id="rua" placeholder="Rua">
-  <input id="coluna" placeholder="Coluna">
-  <input id="altura" placeholder="Altura">
-  <input id="item" placeholder="Item">
+    <h2>Estoque 3D</h2>
 
-  <button onclick="salvar()">
-    Salvar
-  </button>
+    <input id="rua" placeholder="Rua">
+    <input id="coluna" placeholder="Coluna">
+    <input id="altura" placeholder="Altura">
+    <input id="item" placeholder="Item">
 
-  <h2>Lista</h2>
+    <button onclick="salvar()">
+      Salvar
+    </button>
 
-  <h2>Visualização 3D</h2>
+  </div>
 
-  <div id="matriz"></div>
+  <div id="canvas3d"></div>
 
   <script>
 
     const API_URL =
       "https://script.google.com/macros/s/AKfycbzMACjgdxjUfhjtmJiyqTGOZzaoNDM2LWBieG60z5qPtm5u2x7yjW2sNTP1tPzqW8FV/exec";
+
+    // =========================
+    // THREE.JS
+    // =========================
+
+    const scene =
+      new THREE.Scene();
+
+    scene.background =
+      new THREE.Color(0xf0f0f0);
+
+    const camera =
+      new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+
+    const renderer =
+      new THREE.WebGLRenderer({
+        antialias: true
+      });
+
+    renderer.setSize(
+      window.innerWidth,
+      window.innerHeight - 120
+    );
+
+    document
+      .getElementById("canvas3d")
+      .appendChild(renderer.domElement);
+
+    // luz
+    const light =
+      new THREE.DirectionalLight(0xffffff, 2);
+
+    light.position.set(10, 20, 10);
+
+    scene.add(light);
+
+    const ambient =
+      new THREE.AmbientLight(0xffffff, 1);
+
+    scene.add(ambient);
+
+    // câmera
+    camera.position.set(8, 8, 12);
+
+    camera.lookAt(0, 0, 0);
+
+    // =========================
+    // MATRIZ
+    // =========================
+
+    function limparCena() {
+
+      while(scene.children.length > 2) {
+
+        scene.remove(scene.children[2]);
+
+      }
+    }
+
+    function mostrar(dados) {
+
+      limparCena();
+
+      const ruas = ["A", "B", "C", "D"];
+
+      ruas.forEach((rua, z) => {
+
+        for (let coluna = 1; coluna <= 4; coluna++) {
+
+          const alturaMax =
+            coluna === 1 ? 2 : 3;
+
+          for (let altura = 1; altura <= alturaMax; altura++) {
+
+            const item =
+              dados.find(d =>
+
+                d.Rua === rua &&
+                Number(d.Coluna) === coluna &&
+                Number(d.Altura) === altura
+              );
+
+            const geometry =
+              new THREE.BoxGeometry(1,1,1);
+
+            const material =
+              new THREE.MeshStandardMaterial({
+
+                color:
+                  item ? 0x00aa00 : 0xcccccc
+
+              });
+
+            const cube =
+              new THREE.Mesh(
+                geometry,
+                material
+              );
+
+            // posição
+            cube.position.x =
+              coluna * 2;
+
+            cube.position.y =
+              altura * 1.5;
+
+            cube.position.z =
+              z * 2;
+
+            scene.add(cube);
+          }
+        }
+      });
+    }
+
+    // =========================
+    // CARREGAR
+    // =========================
 
     function carregar() {
 
@@ -41,219 +199,114 @@
       document.body.appendChild(script);
     }
 
-    function mostrar(dados) {
-
-  const matriz =
-    document.getElementById("matriz");
-
-  if (!matriz) return;
-
-  matriz.innerHTML = "";
-
-  // alturas
-  for (let altura = 1; altura <= 3; altura++) {
-
-    const camada =
-      document.createElement("div");
-
-    camada.style.marginBottom = "30px";
-
-    const titulo =
-      document.createElement("h3");
-
-    titulo.textContent =
-      `Altura ${altura}`;
-
-    camada.appendChild(titulo);
-
-    const tabela =
-      document.createElement("table");
-
-    tabela.border = "1";
-    tabela.cellPadding = "10";
-
-    // CABEÇALHO
-    const head =
-      document.createElement("tr");
-
-    const vazio =
-      document.createElement("th");
-
-    vazio.textContent = "Rua";
-
-    head.appendChild(vazio);
-
-    for (let coluna = 1; coluna <= 4; coluna++) {
-
-      const th =
-        document.createElement("th");
-
-      th.textContent = coluna;
-
-      head.appendChild(th);
-    }
-
-    tabela.appendChild(head);
-
-    // RUAS
-    ["A", "B", "C", "D"].forEach(rua => {
-
-      const tr =
-        document.createElement("tr");
-
-      const nomeRua =
-        document.createElement("th");
-
-      nomeRua.textContent = rua;
-
-      tr.appendChild(nomeRua);
-
-      // COLUNAS
-      for (let coluna = 1; coluna <= 4; coluna++) {
-
-        const td =
-          document.createElement("td");
-
-        td.style.width = "100px";
-        td.style.height = "70px";
-        td.style.textAlign = "center";
-        td.style.verticalAlign = "middle";
-
-        // regra física
-        if (coluna === 1 && altura > 2) {
-
-          td.style.backgroundColor = "#444";
-
-          td.style.color = "white";
-
-          td.textContent = "X";
-
-          tr.appendChild(td);
-
-          continue;
-        }
-
-        // procura item
-        const itemEncontrado = dados.find(d =>
-
-          d.Rua === rua &&
-          Number(d.Coluna) === coluna &&
-          Number(d.Altura) === altura
-        );
-
-        if (itemEncontrado) {
-
-          td.style.backgroundColor = "#90ee90";
-
-          td.innerHTML =
-            `<strong>📦</strong><br>${itemEncontrado.Item}`;
-
-        } else {
-
-          td.style.backgroundColor = "#f0f0f0";
-
-          td.textContent = "⬜";
-        }
-
-        tr.appendChild(td);
-      }
-
-      tabela.appendChild(tr);
-    });
-
-    camada.appendChild(tabela);
-
-    matriz.appendChild(camada);
-  }
-}
+    // =========================
+    // SALVAR
+    // =========================
 
     function salvar() {
 
       let rua =
-  document.getElementById("rua").value
-    .trim()
-    .toUpperCase();
+        document.getElementById("rua")
+          .value
+          .trim()
+          .toUpperCase();
 
-// validação
-if (!["A", "B", "C", "D"].includes(rua)) {
+      if (!["A","B","C","D"].includes(rua)) {
 
-  alert("Rua inválida! Use apenas A, B, C ou D.");
+        alert(
+          "Rua inválida!"
+        );
 
-  return;
-}
-
-rua = encodeURIComponent(rua);
+        return;
+      }
 
       const coluna =
-        encodeURIComponent(
-          document.getElementById("coluna").value
-        );
+        document.getElementById("coluna")
+          .value;
 
       const altura =
-        encodeURIComponent(
-          document.getElementById("altura").value
-        );
+        document.getElementById("altura")
+          .value;
 
       const item =
-        encodeURIComponent(
-          document.getElementById("item").value
+        document.getElementById("item")
+          .value;
+
+      const colunaNum =
+        parseInt(coluna);
+
+      const alturaNum =
+        parseInt(altura);
+
+      // validações
+      if (
+        colunaNum < 1 ||
+        colunaNum > 4
+      ) {
+
+        alert(
+          "Colunas: 1 até 4"
         );
 
-      const colunaNum = parseInt(coluna);
-      const alturaNum = parseInt(altura);
-
-      // validações numéricas
-      if (isNaN(colunaNum) || isNaN(alturaNum)) {
-
-      alert("Coluna e Altura devem ser números.");
-
-      return;
+        return;
       }
 
-      // primeira coluna -> máximo 2
-      if (colunaNum === 1 && alturaNum > 2) {
+      if (
+        colunaNum === 1 &&
+        alturaNum > 2
+      ) {
 
-      alert(
-      "A coluna 1 permite altura máxima de 2."
-      );
+        alert(
+          "Coluna 1 suporta até altura 2"
+        );
 
-      return;
+        return;
       }
 
-      // demais colunas -> máximo 3
-      if (colunaNum > 1 && alturaNum > 3) {
+      if (
+        colunaNum > 1 &&
+        alturaNum > 3
+      ) {
 
-      alert(
-      "As demais colunas permitem altura máxima de 3."
-      );
+        alert(
+          "Altura máxima é 3"
+        );
 
-      return;
+        return;
       }
-      // limite de colunas
-      if (colunaNum < 1 || colunaNum > 4) {
 
-      alert(
-      "As colunas devem estar entre 1 e 4."
-      );
-
-      return;
-      }
       const script =
         document.createElement("script");
 
       script.src =
-        `${API_URL}?rua=${rua}&coluna=${coluna}&altura=${altura}&item=${item}&callback=salvo`;
+        `${API_URL}?rua=${encodeURIComponent(rua)}&coluna=${encodeURIComponent(coluna)}&altura=${encodeURIComponent(altura)}&item=${encodeURIComponent(item)}&callback=salvo`;
 
       document.body.appendChild(script);
     }
 
-    function salvo(resposta) {
-
-      console.log(resposta);
+    function salvo() {
 
       carregar();
 
     }
+
+    // =========================
+    // LOOP
+    // =========================
+
+    function animar() {
+
+      requestAnimationFrame(animar);
+
+      scene.rotation.y += 0.002;
+
+      renderer.render(
+        scene,
+        camera
+      );
+    }
+
+    animar();
 
     document.addEventListener(
       "DOMContentLoaded",
@@ -261,7 +314,10 @@ rua = encodeURIComponent(rua);
 
         carregar();
 
-        setInterval(carregar, 3000);
+        setInterval(
+          carregar,
+          3000
+        );
 
       }
     );
@@ -269,5 +325,4 @@ rua = encodeURIComponent(rua);
   </script>
 
 </body>
-
 </html>
