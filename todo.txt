@@ -1,0 +1,6 @@
+🏷 mostrar nome do item ao clicar no cubo
+🔎 barra de pesquisa por item
+🚫 cubos inválidos em vermelho
+🧭 coordenadas visuais (A/B/C/D e 1/2/3/4)
+📦 filtro “mostrar apenas ocupados”
+🗑 remover item de uma posição
