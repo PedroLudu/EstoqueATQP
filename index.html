@@ -21,7 +21,9 @@
 
   <h2>Lista</h2>
 
-  <ul id="lista"></ul>
+  <h2>Visualização 3D</h2>
+
+  <div id="matriz"></div>
 
   <script>
 
@@ -41,26 +43,129 @@
 
     function mostrar(dados) {
 
-      const lista =
-        document.getElementById("lista");
+  const matriz =
+    document.getElementById("matriz");
 
-      if (!lista) return;
+  if (!matriz) return;
 
-      lista.innerHTML = "";
+  matriz.innerHTML = "";
 
-      dados.forEach(d => {
+  // alturas
+  for (let altura = 1; altura <= 3; altura++) {
 
-        const li =
-          document.createElement("li");
+    const camada =
+      document.createElement("div");
 
-        li.textContent =
-          `${d.Rua}-${d.Coluna}-${d.Altura} → ${d.Item}`;
+    camada.style.marginBottom = "30px";
 
-        lista.appendChild(li);
+    const titulo =
+      document.createElement("h3");
 
-      });
+    titulo.textContent =
+      `Altura ${altura}`;
 
+    camada.appendChild(titulo);
+
+    const tabela =
+      document.createElement("table");
+
+    tabela.border = "1";
+    tabela.cellPadding = "10";
+
+    // CABEÇALHO
+    const head =
+      document.createElement("tr");
+
+    const vazio =
+      document.createElement("th");
+
+    vazio.textContent = "Rua";
+
+    head.appendChild(vazio);
+
+    for (let coluna = 1; coluna <= 4; coluna++) {
+
+      const th =
+        document.createElement("th");
+
+      th.textContent = coluna;
+
+      head.appendChild(th);
     }
+
+    tabela.appendChild(head);
+
+    // RUAS
+    ["A", "B", "C", "D"].forEach(rua => {
+
+      const tr =
+        document.createElement("tr");
+
+      const nomeRua =
+        document.createElement("th");
+
+      nomeRua.textContent = rua;
+
+      tr.appendChild(nomeRua);
+
+      // COLUNAS
+      for (let coluna = 1; coluna <= 4; coluna++) {
+
+        const td =
+          document.createElement("td");
+
+        td.style.width = "100px";
+        td.style.height = "70px";
+        td.style.textAlign = "center";
+        td.style.verticalAlign = "middle";
+
+        // regra física
+        if (coluna === 1 && altura > 2) {
+
+          td.style.backgroundColor = "#444";
+
+          td.style.color = "white";
+
+          td.textContent = "X";
+
+          tr.appendChild(td);
+
+          continue;
+        }
+
+        // procura item
+        const itemEncontrado = dados.find(d =>
+
+          d.Rua === rua &&
+          Number(d.Coluna) === coluna &&
+          Number(d.Altura) === altura
+        );
+
+        if (itemEncontrado) {
+
+          td.style.backgroundColor = "#90ee90";
+
+          td.innerHTML =
+            `<strong>📦</strong><br>${itemEncontrado.Item}`;
+
+        } else {
+
+          td.style.backgroundColor = "#f0f0f0";
+
+          td.textContent = "⬜";
+        }
+
+        tr.appendChild(td);
+      }
+
+      tabela.appendChild(tr);
+    });
+
+    camada.appendChild(tabela);
+
+    matriz.appendChild(camada);
+  }
+}
 
     function salvar() {
 
