@@ -496,7 +496,12 @@
 const mouse =
   new THREE.Vector2();
 
+let cuboSelecionado = null;
 let cuboAtual = null;
+// =========================
+// CLICK / SELEÇÃO
+// =========================
+
 window.addEventListener(
   "click",
   (event) => {
@@ -526,6 +531,51 @@ window.addEventListener(
       const objeto =
         intersects[0].object;
 
+      // remove borda anterior
+      if (
+        cuboSelecionado &&
+        cuboSelecionado.userData.borda
+      ) {
+
+        cuboSelecionado.remove(
+          cuboSelecionado.userData.borda
+        );
+      }
+
+      cuboSelecionado =
+        objeto;
+
+      // cria borda brilhante
+      const edges =
+        new THREE.EdgesGeometry(
+          objeto.geometry
+        );
+
+      const linha =
+        new THREE.LineSegments(
+
+          edges,
+
+          new THREE.LineBasicMaterial({
+
+            color: 0xffff00
+
+          })
+        );
+
+      linha.scale.set(
+        1.05,
+        1.05,
+        1.05
+      );
+
+      objeto.add(linha);
+
+      objeto.userData.borda =
+        linha;
+
+      // INFO BOX
+
       if (
         objeto.userData
       ) {
@@ -542,10 +592,26 @@ window.addEventListener(
           "block";
 
         box.innerHTML = `
-          <strong>${info.item}</strong><br>
-          Rua: ${info.rua}<br>
-          Coluna: ${info.coluna}<br>
-          Altura: ${info.altura}
+
+          <strong>
+            ${info.item}
+          </strong>
+
+          <br><br>
+
+          Rua:
+          ${info.rua}
+
+          <br>
+
+          Coluna:
+          ${info.coluna}
+
+          <br>
+
+          Altura:
+          ${info.altura}
+
         `;
       }
     }
@@ -612,7 +678,7 @@ window.addEventListener(
     }
   }
 );
-    
+
     function animar() {
 
       requestAnimationFrame(animar);
