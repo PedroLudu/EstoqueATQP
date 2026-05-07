@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Estoque 3D</title>
+</head>
+<body>
 <script>
 
 const API_URL =
@@ -71,8 +77,12 @@ function salvo(resposta) {
   carregar();
 }
 
-setInterval(carregar, 3000);
+window.onload = () => {
 
-carregar();
+  carregar();
+
+  setInterval(carregar, 3000);
+
+};
 
 </script>
