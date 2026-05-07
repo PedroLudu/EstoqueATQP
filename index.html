@@ -40,18 +40,31 @@ async function carregar() {
 
 async function salvar() {
 
-  const rua = document.getElementById("rua").value;
-  const coluna = document.getElementById("coluna").value;
-  const altura = document.getElementById("altura").value;
-  const item = document.getElementById("item").value;
-
-  await fetch(
-    `${API_URL}?rua=${rua}&coluna=${coluna}&altura=${altura}&item=${item}`
+  const rua = encodeURIComponent(
+    document.getElementById("rua").value
   );
+
+  const coluna = encodeURIComponent(
+    document.getElementById("coluna").value
+  );
+
+  const altura = encodeURIComponent(
+    document.getElementById("altura").value
+  );
+
+  const item = encodeURIComponent(
+    document.getElementById("item").value
+  );
+
+  const url =
+    `${API_URL}?rua=${rua}&coluna=${coluna}&altura=${altura}&item=${item}`;
+
+  const res = await fetch(url);
+
+  console.log(await res.text());
 
   carregar();
 }
-
 setInterval(carregar, 3000);
 
 carregar();
