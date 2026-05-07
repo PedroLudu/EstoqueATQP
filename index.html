@@ -617,7 +617,7 @@ window.addEventListener(
     }
   }
 );
-    // =========================
+// =========================
 // HOVER
 // =========================
 
@@ -643,8 +643,11 @@ window.addEventListener(
         scene.children
       );
 
-    // restaura cor anterior
-    if (cuboAtual) {
+    // RESTAURA COR ANTERIOR
+    if (
+      cuboAtual &&
+      cuboAtual !== cuboSelecionado
+    ) {
 
       cuboAtual.material.color.set(
 
@@ -653,11 +656,11 @@ window.addEventListener(
         : 0xbbbbbb
 
       );
-
-      cuboAtual = null;
     }
 
-    // novo hover
+    cuboAtual = null;
+
+    // NOVO HOVER
     if (
       intersects.length > 0
     ) {
@@ -665,8 +668,9 @@ window.addEventListener(
       const objeto =
         intersects[0].object;
 
+      // NÃO altera cor do selecionado
       if (
-        objeto.material
+        objeto !== cuboSelecionado
       ) {
 
         cuboAtual = objeto;
