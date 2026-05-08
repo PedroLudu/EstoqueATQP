@@ -96,7 +96,7 @@
 
   padding: 12px 18px;
 
-  border-radius: 10px;
+  border-radius: 20px;
 
   z-index: 20;
 
@@ -122,13 +122,11 @@
 
     <input
       id="coluna"
-      type="number"
       placeholder="Coluna"
     >
 
     <input
       id="altura"
-      type="number"
       placeholder="Altura"
     >
 
@@ -155,6 +153,16 @@
     'https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls';
 
     // =========================
+    // VARIAVEIS GLOBAIS
+    // =========================
+
+    
+
+    let tempoPisca = 0;
+    const cubos = [];
+    const labels = [];
+
+    // =========================
     // API
     // =========================
 
@@ -169,7 +177,7 @@
       new THREE.Scene();
 
     scene.background =
-      new THREE.Color(0xf0f0f0);
+      new THREE.Color(0x2e2e3b);
 
     // =========================
     // CAMERA
@@ -268,21 +276,77 @@
     // LIMPAR CENA
     // =========================
 
-    function limparCena() {
+   function limparCena() {
 
-      while (
-        scene.children.length > 2
-      ) {
+  cubos.forEach(objeto => {
 
-        scene.remove(
-          scene.children[2]
-        );
-      }
-    }
+    scene.remove(objeto);
+
+  });
+
+  labels.forEach(objeto => {
+
+    scene.remove(objeto);
+
+  });
+
+  cubos.length = 0;
+  labels.length = 0;
+}
+
 
     // =========================
     // MOSTRAR MATRIZ
     // =========================
+
+    function criarTexto(texto) {
+
+  const canvas =
+    document.createElement("canvas");
+
+  const ctx =
+    canvas.getContext("2d");
+
+  canvas.width = 256;
+  canvas.height = 128;
+
+  ctx.fillStyle = "white";
+
+  ctx.font = "Bold 48px Arial";
+
+  ctx.textAlign = "center";
+
+  ctx.textBaseline = "middle";
+
+  ctx.fillText(
+    texto,
+    canvas.width / 2,
+    canvas.height / 2
+  );
+
+  const texture =
+    new THREE.CanvasTexture(canvas);
+
+  const material =
+    new THREE.SpriteMaterial({
+
+      map: texture,
+
+      transparent: true
+
+    });
+
+  const sprite =
+    new THREE.Sprite(material);
+
+  sprite.scale.set(
+    1.8,
+    0.9,
+    1
+  );
+
+  return sprite;
+}
 
     window.mostrar = function(dados) {
 
@@ -290,6 +354,50 @@
 
       const ruas =
         ["A","B","C","D"];
+
+        // =========================
+// LABELS DAS RUAS
+// =========================
+
+ruas.forEach((rua, z) => {
+
+  const labelRua =
+    criarTexto(`Rua ${rua}`);
+
+  labelRua.position.set(
+    -1.5,
+    0.5,
+    -z * 2
+  );
+
+  scene.add(labelRua);
+
+  labels.push(labelRua);
+});
+
+// =========================
+// LABELS DAS COLUNAS
+// =========================
+
+for (
+  let coluna = 1;
+  coluna <= 4;
+  coluna++
+) {
+
+  const labelColuna =
+    criarTexto(`C${coluna}`);
+
+  labelColuna.position.set(
+    coluna * 2,
+    0.5,
+    2
+  );
+
+  scene.add(labelColuna);
+
+  labels.push(labelColuna);
+}
 
       ruas.forEach((rua, z) => {
 
@@ -323,15 +431,30 @@
                 1
               );
 
-            const material =
-              new THREE.MeshStandardMaterial({
+           const valorItem =
+  item?.Item != null
+    ? String(item.Item).trim()
+    : "";
 
-                color:
-                  item
-                  ? 0x00aa00
-                  : 0xbbbbbb
+const possuiItem =
+  valorItem !== "";
 
-              });
+const material =
+  new THREE.MeshStandardMaterial({
+
+    color:
+      possuiItem
+      ? 0x00aa00
+      : 0x888888,
+
+    transparent: true,
+
+    opacity:
+      possuiItem
+      ? 1
+      : 0.5
+
+  });
 
             const cube =
               new THREE.Mesh(
@@ -348,10 +471,7 @@
              coluna,
              altura,
 
-              item:
-             item
-            ? item.Item
-           : "Vazio"
+              item: valorItem
 
             };
 
@@ -364,9 +484,26 @@
               altura * 1.5;
 
             cube.position.z =
-              z * 2;
+              -z * 2;
 
             scene.add(cube);
+            cubos.push(cube);
+            // restaura seleção após atualização
+
+if (
+
+  posicaoSelecionada &&
+
+  posicaoSelecionada.rua === rua &&
+
+  Number(posicaoSelecionada.coluna) === coluna &&
+
+  Number(posicaoSelecionada.altura) === altura
+
+) {
+
+  cuboSelecionado = cube;
+}
           }
         }
       });
@@ -387,6 +524,35 @@
 
       document.body.appendChild(script);
     }
+
+    function salvarDireto(
+  rua,
+  coluna,
+  altura,
+  item
+) {
+
+  const script =
+    document.createElement("script");
+
+  script.src =
+
+    `${API_URL}
+
+    ?rua=${encodeURIComponent(rua)}
+
+    &coluna=${encodeURIComponent(coluna)}
+
+    &altura=${encodeURIComponent(altura)}
+
+    &item=${encodeURIComponent(item)}
+
+    &callback=salvo`
+
+    .replace(/\s/g, "");
+
+  document.body.appendChild(script);
+}
 
     // =========================
     // SALVAR
@@ -497,6 +663,8 @@ const mouse =
   new THREE.Vector2();
 
 let cuboSelecionado = null;
+let posicaoSelecionada = null;
+
 let cuboAtual = null;
 // =========================
 // CLICK / SELEÇÃO
@@ -521,8 +689,8 @@ window.addEventListener(
 
     const intersects =
       raycaster.intersectObjects(
-        scene.children
-      );
+  cubos
+);
 
     if (
       intersects.length > 0
@@ -531,91 +699,170 @@ window.addEventListener(
       const objeto =
         intersects[0].object;
 
-      // remove borda anterior
-      if (
-        cuboSelecionado &&
-        cuboSelecionado.userData.borda
-      ) {
 
-        cuboSelecionado.remove(
-          cuboSelecionado.userData.borda
-        );
-      }
+      // restaura cubo anterior
+if (
+  cuboSelecionado &&
+  cuboSelecionado !== objeto
+) {
 
-      cuboSelecionado =
-        objeto;
+  cuboSelecionado.material.color.set(
 
-      // cria borda brilhante
-      const edges =
-        new THREE.EdgesGeometry(
-          objeto.geometry
-        );
+    cuboSelecionado.userData.item !== ""
+    ? 0x00aa00
+    : 0xbbbbbb
 
-      const linha =
-        new THREE.LineSegments(
+  );
+}
 
-          edges,
+// novo selecionado
+cuboSelecionado = objeto;
+  
+  posicaoSelecionada = {
 
-          new THREE.LineBasicMaterial({
+  rua: objeto.userData.rua,
 
-            color: 0xffff00
+  coluna: objeto.userData.coluna,
 
-          })
-        );
+  altura: objeto.userData.altura
 
-      linha.scale.set(
-        1.05,
-        1.05,
-        1.05
-      );
+};
 
-      objeto.add(linha);
-
-      objeto.userData.borda =
-        linha;
+      
 
       // INFO BOX
 
       if (
-        objeto.userData
-      ) {
+  objeto.userData
+) {
 
-        const info =
-          objeto.userData;
+  const info =
+    objeto.userData;
 
-        const box =
-          document.getElementById(
-            "infoBox"
-          );
+  const box =
+    document.getElementById(
+      "infoBox"
+    );
 
-        box.style.display =
-          "block";
+  box.style.display =
+    "block";
 
-        box.innerHTML = `
+  box.innerHTML = `
 
-          <strong>
-            ${info.item}
-          </strong>
+    <div style="min-width:220px">
 
-          <br><br>
+      <div style="margin-bottom:10px">
 
-          Rua:
-          ${info.rua}
+        <strong>
+          Rua ${info.rua}
+        </strong>
 
-          <br>
+        -
 
-          Coluna:
-          ${info.coluna}
+        Coluna ${info.coluna}
 
-          <br>
+        -
 
-          Altura:
-          ${info.altura}
+        Altura ${info.altura}
 
-        `;
-      }
-    }
-  }
+      </div>
+    <input
+      id="popupItem"
+
+  value="${info.item}"
+
+  placeholder="Item"
+
+  style="
+    width:100%;
+    padding:10px;
+    margin-bottom:10px;
+    border:none;
+    border-radius:6px;
+    box-sizing:border-box;
+  "
+>
+
+      <button
+
+        id="btnSalvarPopup"
+
+        style="
+  width:100%;
+  padding:10px;
+  margin-bottom:8px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  box-sizing:border-box;
+"
+      >
+
+        Salvar
+
+      </button>
+
+      <button
+
+        id="btnRemoverPopup"
+
+        style="
+          width:100%;
+          padding:10px;
+          border:none;
+          border-radius:6px;
+          cursor:pointer;
+          background:#aa3333;
+          color:white;
+        "
+      >
+
+        Remover Item
+
+      </button>
+
+    </div>
+  `;
+
+  // =========================
+  // EVENTOS DO POPUP
+  // =========================
+
+  document
+    .getElementById("btnSalvarPopup")
+    .onclick = () => {
+
+      const novoItem =
+        document
+          .getElementById("popupItem")
+          .value;
+
+      salvarDireto(
+
+        info.rua,
+        info.coluna,
+        info.altura,
+        novoItem
+
+      );
+    };
+
+  document
+    .getElementById("btnRemoverPopup")
+    .onclick = () => {
+
+      salvarDireto(
+
+        info.rua,
+        info.coluna,
+        info.altura,
+        ""
+
+      );
+    };
+}
+}
+}
 );
 // =========================
 // HOVER
@@ -640,27 +887,38 @@ window.addEventListener(
 
     const intersects =
       raycaster.intersectObjects(
-        scene.children
+        cubos
       );
 
-    // RESTAURA COR ANTERIOR
+    // restaura hover antigo
     if (
       cuboAtual &&
       cuboAtual !== cuboSelecionado
     ) {
 
-      cuboAtual.material.color.set(
+      if (
+        cuboAtual.userData.item !== ""
+      ) {
 
-        cuboAtual.userData.item !== "Vazio"
-        ? 0x00aa00
-        : 0xbbbbbb
+        cuboAtual.material.color.set(
+          0x00aa00
+        );
 
-      );
+        cuboAtual.material.opacity = 1;
+
+      } else {
+
+        cuboAtual.material.color.set(
+          0x888888
+        );
+
+        cuboAtual.material.opacity = 0.5;
+      }
     }
 
     cuboAtual = null;
 
-    // NOVO HOVER
+    // novo hover
     if (
       intersects.length > 0
     ) {
@@ -668,7 +926,7 @@ window.addEventListener(
       const objeto =
         intersects[0].object;
 
-      // NÃO altera cor do selecionado
+      // ignora selecionado
       if (
         objeto !== cuboSelecionado
       ) {
@@ -678,6 +936,8 @@ window.addEventListener(
         objeto.material.color.set(
           0xffff00
         );
+
+        objeto.material.opacity = 1;
       }
     }
   }
@@ -688,6 +948,41 @@ window.addEventListener(
       requestAnimationFrame(animar);
 
       controls.update();
+
+      
+
+    // =========================
+    // PISCAR CONTÍNUO
+    // =========================
+
+tempoPisca += 0.08;
+
+if (
+  cuboSelecionado
+) {
+
+  const intensidade =
+    (Math.sin(tempoPisca) + 1) / 2;
+
+  if (
+    intensidade > 0.5
+  ) {
+
+    cuboSelecionado.material.color.set(
+      0xffffff
+    );
+
+  } else {
+
+    cuboSelecionado.material.color.set(
+
+      cuboSelecionado.userData.item !== ""
+      ? 0x00aa00
+      : 0x888888
+
+    );
+  }
+}
 
       renderer.render(
         scene,
@@ -724,11 +1019,15 @@ window.addEventListener(
 
     carregar();
 
-    setInterval(
-      carregar,
-      3000
-    );
+    setInterval(() => {
 
+  if (!document.hidden) {
+
+    carregar();
+
+  }
+
+}, 3000);
   </script>
 
 </body>
